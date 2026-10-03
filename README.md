@@ -14,14 +14,16 @@
 ```
 agent-learning/
 ├── README.md                 # 本文件
+├── NOTES.md                  # 📝 学习笔记（每天填，面试前一夜只看它）
+├── TROUBLESHOOTING.md        # 🔧 报错速查表（先查这里，再找我）
 ├── day01_raw_llm/            # ✅ 原生 LLM 调用 + 结构化输出（第 1 天）
-├── day02_function_call/      # ⏳ 手写 Function Calling（第 2–3 天）
-├── day03_react_loop/         # ⏳ 手写 ReAct 循环（第 4–5 天）
-├── day04_memory/             # ⏳ 记忆机制（第 6 天）
+├── day02_function_calling/   # ✅ 概念阶梯：one-shot → ReAct → 护栏（第 2 天，v2）
+├── day03_tool_registry/      # ⏳ 工具注册表 + 异常兜底（第 3 天）
+├── day04_memory/             # ⏳ 记忆机制（第 4 天）
 ├── week2_framework_rag/      # ⏳ 框架 + RAG（第 2 周）
 └── cs-agent/                 # 🎯 终极项目：智能客服 Agent（第 3 周）
 ```
-> ⏳ = 待创建，🎯 = 主项目
+> ⏳ = 待创建，✅ = 已完成，🎯 = 主项目
 
 ## 学习闭环（每天必做）
 1. 读当天 `README.md` 的任务与目标；
@@ -36,6 +38,21 @@ pip install -r requirements.txt
 cp .env.example .env      # 然后把你的 API Key 填进 .env
 python 01_hello_llm.py
 ```
+
+## Day 2 快速开始（Function Calling 与 ReAct）
+```bash
+cd day02_function_calling
+python self_check.py          # 0. 纯本地自检（10 项断言，不花额度）
+python step1_oneshot.py       # ① one-shot：停止权在代码（收尾 tools=None）
+python step2_react.py         # ② ReAct 循环：停止权交给模型（★只差两处）
+python step3_guardrails.py    # ③ 生产护栏：max_steps / 去重 / 异常回传
+```
+> 核心命题：**停止权在谁手里**。三个 step 跑相同场景（S1/S2/S3），对比答案与统计，差异自现。
+> 三个 step 共享 `_tools.py`（工具单一事实来源）与 `llm_client.py`（配置自检 + 错误人话翻译）。
+> 跑完去 `experiments.md` 做破坏性实验（至少 3 个）——课程地图见 day02 的 `README.md`。
+> 依赖与 Day 1 相同（requests + python-dotenv），Day 1 装过则无需重装；
+> 从任何目录直接运行均可（脚本会自动找到同目录的共享模块）。
+> **笔记请写入仓库根目录 `NOTES.md`**——面试前一夜只看它。
 
 ## 模型选择说明
 本项目统一走 **OpenAI 兼容接口**，因此可无缝切换国产模型：
