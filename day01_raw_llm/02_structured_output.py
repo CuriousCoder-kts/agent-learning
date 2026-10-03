@@ -35,11 +35,32 @@ API_KEY = os.getenv("LLM_API_KEY", "")
 MODEL = os.getenv("LLM_MODEL", "")
 
 
+def _require_config():
+    """配置自检：把 MissingSchema 这类‘看不懂的报错’变成人话。
+
+    根因几乎总是 .env 缺失或 Key 未填写。这是一种工程习惯：
+    在昂贵/易错的调用之前，先做廉价的前置校验。
+    """
+    if not BASE_URL or not API_KEY or not MODEL or API_KEY == "your_api_key_here":
+        missing = [
+            name for name, val in
+            [("LLM_BASE_URL", BASE_URL), ("LLM_API_KEY", API_KEY), ("LLM_MODEL", MODEL)]
+            if not val or val == "your_api_key_here"
+        ]
+        raise SystemExit(
+            f"\n[配置错误] 缺失或未修改：{', '.join(missing)}\n"
+            f"当前 BASE_URL = {BASE_URL!r}\n\n"
+            f"排查：1) 本目录是否有 .env（非 .env.example）？没有就 cp .env.example .env；"
+            f"2) 把 your_api_key_here 换成真实 Key；3) .env 需与本脚本同目录。\n"
+        )
+
+
 def chat(messages: list[dict], temperature: float = 0.0, json_mode: bool = False) -> str:
     """对话调用。json_mode=True 时尝试启用模型的 JSON 输出模式。
 
     注意 temperature 默认设为 0：结构化任务要稳定，不要创造性。
     """
+    _require_config()
     url = f"{BASE_URL}/chat/completions"
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -90,7 +111,7 @@ JSON 格式如下：
 
 
 if __name__ == "__main__":
-    user_input = "我昨天买的东西到现在还没发货！你们到底怎么回事？？"
+    user_input = "你们这个东西怎么这么垃圾啊？？"
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -99,7 +120,7 @@ if __name__ == "__main__":
 
     print(f">>> 用户输入：{user_input}\n")
 
-    raw = chat(messages, temperature=0.0, json_mode=True)
+    raw = chat(messages, temperature=0.0, json_mode=False)
     print(">>> 模型原始输出：")
     print(raw)
 

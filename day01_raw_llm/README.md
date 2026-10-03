@@ -23,6 +23,11 @@ python 01_hello_llm.py
 python 02_structured_output.py
 ```
 
+> **新人第一个坑（务必注意）**：`.env` 是隐藏文件，且必须与脚本**同目录**。
+> 若报错 `MissingSchema: Invalid URL '/chat/completions'`，就是 `.env` 没建好
+> —— 详见仓库根目录 `TROUBLESHOOTING.md`。
+> 脚本现已内置配置自检，会直接告诉你缺什么，先看它的提示。
+
 ## 三、核心知识点（务必理解，不背）
 
 ### 1. 消息角色（messages）

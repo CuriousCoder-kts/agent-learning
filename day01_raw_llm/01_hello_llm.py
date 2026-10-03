@@ -36,6 +36,24 @@ def chat(messages: list[dict], temperature: float = 0.7) -> str:
     这十几行代码，就是所有 Agent 与 LLM 交互的最底层。
     后面无论用多花哨的框架，本质上都是在这里做文章。
     """
+    # 配置自检：把"看不懂的报错"变成"看得懂的人话"
+    # （MissingSchema 这类错误的根因几乎都是 .env 没配好）
+    if not BASE_URL or not API_KEY or not MODEL:
+        missing = [
+            name for name, val in
+            [("LLM_BASE_URL", BASE_URL), ("LLM_API_KEY", API_KEY), ("LLM_MODEL", MODEL)]
+            if not val or val == "your_api_key_here"
+        ]
+        raise SystemExit(
+            f"\n[配置错误] 以下配置缺失或未修改：{', '.join(missing)}\n"
+            f"当前读取到的 BASE_URL = {BASE_URL!r}\n\n"
+            f"请检查：\n"
+            f"  1) 本目录下是否存在 .env 文件（不是 .env.example）？\n"
+            f"     —— 若没有：cp .env.example .env\n"
+            f"  2) 是否已把 .env 里的 your_api_key_here 换成真实 Key？\n"
+            f"  3) .env 必须与本脚本在同一目录。\n"
+        )
+
     url = f"{BASE_URL}/chat/completions"
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -49,18 +67,39 @@ def chat(messages: list[dict], temperature: float = 0.7) -> str:
 
     # 超时是必须的：生产环境网络一定会出问题，别让请求永远挂着
     resp = requests.post(url, headers=headers, json=payload, timeout=60)
-    resp.raise_for_status()           # 4xx/5xx 直接抛错，便于定位问题
+    # 常见错误的人话翻译（生产里应记日志 + 分级告警，这里先让新手能自查）
+    if resp.status_code == 401:
+        raise SystemExit(
+            "\n[鉴权失败 401] 请求已发出，但 API Key 无效。请检查：\n"
+            "  · .env 里的 LLM_API_KEY 是否已换成真实 Key（不是 your_api_key_here）？\n"
+            "  · Key 是否复制完整（前后无空格、无换行）？\n"
+            "  · Key 是否与 LLM_BASE_URL 属于同一平台？\n"
+        )
+    if resp.status_code == 404:
+        raise SystemExit(
+            f"\n[模型不存在 404] LLM_MODEL={MODEL!r} 可能不被该平台支持。\n"
+            "  请核对 .env 中模型名与该平台文档一致（如 glm-4-flash / deepseek-chat / qwen-plus）。\n"
+        )
+    if resp.status_code == 429:
+        raise SystemExit("\n[限流 429] 请求过于频繁或额度用尽，稍后重试或检查账户余额。\n")
+    resp.raise_for_status()           # 其余 4xx/5xx 直接抛错，便于定位问题
     data = resp.json()
     return data["choices"][0]["message"]["content"]
-
 
 if __name__ == "__main__":
     # 场景预热：我们最终要做智能客服，这里先让模型扮演客服助手
     messages = [
         {"role": "system", "content": "你是一名专业的中文客服助手，回答简洁、准确、礼貌。"},
-        {"role": "user", "content": "你好，请用一句话介绍你自己。"},
+        {"role": "user", "content": "你能帮我写代码吗？"},
     ]
 
+    print(">>> 即将发送的请求体 messages：")
+    print(json.dumps(messages, ensure_ascii=False, indent=2))
+    print("\n>>> 模型回复：")
+    print(chat(messages))
+
+    messages.append({"role": "assistant", "content": "当然可以！请告诉我：你希望实现什么功能？（例如：爬取网页、处理Excel、写个计算器、Web接口等）  - 使用什么编程语言？（如 Python、JavaScript、Java 等，默认可按 Python）  - 是否有特定要求？（如使用某库、运行环境、输入输出格式、是否需要注释或错误处理等）我会为你提供简洁、可运行的代码，并附上简要说明。😊"})
+    messages.append({"role": "user", "content": "帮我实现一个计算两数之差的绝对值的Python函数"})
     print(">>> 即将发送的请求体 messages：")
     print(json.dumps(messages, ensure_ascii=False, indent=2))
     print("\n>>> 模型回复：")
