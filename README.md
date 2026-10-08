@@ -18,7 +18,7 @@ agent-learning/
 ├── TROUBLESHOOTING.md        # 🔧 报错速查表（先查这里，再找我）
 ├── day01_raw_llm/            # ✅ 原生 LLM 调用 + 结构化输出（第 1 天）
 ├── day02_function_calling/   # ✅ 概念阶梯：one-shot → ReAct → 护栏（第 2 天，v2）
-├── day03_tool_registry/      # ⏳ 工具注册表 + 异常兜底（第 3 天）
+├── day03_tool_registry/      # ✅ 工具注册表 + 异常分级兜底（第 3 天）
 ├── day04_memory/             # ⏳ 记忆机制（第 4 天）
 ├── week2_framework_rag/      # ⏳ 框架 + RAG（第 2 周）
 └── cs-agent/                 # 🎯 终极项目：智能客服 Agent（第 3 周）
@@ -53,6 +53,19 @@ python step3_guardrails.py    # ③ 生产护栏：max_steps / 去重 / 异常�
 > 依赖与 Day 1 相同（requests + python-dotenv），Day 1 装过则无需重装；
 > 从任何目录直接运行均可（脚本会自动找到同目录的共享模块）。
 > **笔记请写入仓库根目录 `NOTES.md`**——面试前一夜只看它。
+
+## Day 3 快速开始（工具注册表与异常分级）
+```bash
+cd day03_tool_registry
+python 01_schema_drift.py        # ① 先看"病"：手写 schema 的三种死法（纯本地）
+python self_check.py             # ② 42 项不变量断言（不花额度）
+python 02_fc_with_registry.py    # ③ 注册表版 FC 循环，5 个场景实跑（花额度）
+```
+> 核心命题：**工具的"说明书"与"实现"必须是同一份真相**。
+> `@tool` 装饰器一次登记 → schema 由函数签名 + docstring 实时生成，
+> 加一个工具只写一个函数（Day 2 要改两处，这就是升级的全部意义）。
+> 异常做了**分级**：业务异常回传给模型让它自救，系统异常回传但要求它停手。
+> 对照阅读：这一天的机制就是主项目 `cs-agent/cs_agent/tools.py` 的骨架。
 
 ## 模型选择说明
 本项目统一走 **OpenAI 兼容接口**，因此可无缝切换国产模型：
