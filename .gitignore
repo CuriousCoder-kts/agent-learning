@@ -14,3 +14,7 @@ venv/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# 第三方参考仓库（只读学习用，绝不塞进自己的仓库）
+# 想留档就写笔记（见 day04 README 的"官方 demo 拆解"），而不是复制源码
+openai-cs-agents-demo/
