@@ -35,6 +35,7 @@ Day 2 的写法是"两份清单"：写一个函数，再手写一段 JSON Schema
 | `01_schema_drift.py` | 实验一：手写 schema 的三种死法 + 注册表怎么治 | 否 |
 | `02_fc_with_registry.py` | 实验二：注册表版 FC 循环，4 个场景实跑 | **是** |
 | `self_check.py` | 30 项不变量断言（schema↔实现、参数校验、异常分级） | 否 |
+| `check_my_registry.py` | **关卡一验证器**：把你手敲的实现与参考实现逐字段比对 | 否 |
 | `llm_client.py` | 共享客户端（与 day02 同源） | 否 |
 
 ## 四、运行顺序
@@ -44,6 +45,9 @@ cd day03_tool_registry
 python 01_schema_drift.py        # 先看"病"，纯本地，5 分钟
 python self_check.py             # 再看自检，确认机制正确
 python 02_fc_with_registry.py    # 最后实跑（要 .env 里的真 Key）
+
+# 关卡一：手敲完自己的实现后，用它验证（逐字段对比参考实现）
+python check_my_registry.py my_registry.py
 ```
 
 `.env` 直接从 day02 复制即可（同一个 Key）。
